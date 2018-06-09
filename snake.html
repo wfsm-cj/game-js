@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style>
+		div{
+			position: absolute;
+		}
+	</style>
+</head>
+<body>
+	<script>
+		function Map(){
+			this.width=800;//地图宽度
+			this.height=400;//地图高度
+			this.color='#ccc';//地图颜色
+			this.ele=null;//保存地图dom元素
+			this.init();
+		}
+		// 初始化地图
+		Map.prototype.init=function(){
+			this.ele=document.createElement('div');
+			this.ele.style.width=this.width+'px';
+			this.ele.style.height=this.height+'px';
+			this.ele.style.backgroundColor=this.color;
+			document.querySelector('body').appendChild(this.ele)
+		}
+
+		function Food(){
+			this.width=20;
+			this.height=20;
+			this.color='green';//食物颜色
+			this.x=0;
+			this.y=0; //在地图的那个位置
+			this.ele=null;//保存食物的dom元素
+			this.init();
+			console.log(this.color)
+		}
+
+		Food.prototype.init=function(){
+			this.color=["yellow","green","brown","lightblue"][~~(Math.random()*4)];//食物颜色
+
+			if(!this.ele){
+				this.ele=document.createElement('div');
+				this.ele.style.width=this.width+'px';
+				this.ele.style.height=this.height+'px';
+				map.ele.appendChild(this.ele)
+			}
+			// 改颜色
+			this.ele.style.backgroundColor=this.color;
+
+			this.x=Math.floor(Math.random()*40);
+			this.y=Math.floor(Math.random()*20);
+			this.ele.style.left=this.x*this.width+'px';
+			this.ele.style.top=this.y*this.height+'px';
+		}
+
+		function Snake(){
+			this.width=20;
+			this.height=20;//蛇节高度
+			// this.direction=
+			this.body=[//蛇的信息
+				{x:2,y:2,color:"blue",ele:null},
+				{x:3,y:2,color:'blue',ele:null},
+				{x:4,y:2,color:'blue',ele:null},
+				{x:5,y:2,color:'blue',ele:null},
+				{x:6,y:2,color:'blue',ele:null},
+				{x:7,y:2,color:'red',ele:null}
+			],
+			this.direction='right'//蛇的移动方向
+			this.isAlive=true;
+			this.init();
+			
+		}
+
+		Snake.prototype.init=function(){
+			// 显示蛇
+			for(var i=0;i<this.body.length;i++){
+				if(!this.body[i].ele){//是空才创建，不然就移动，否则会创建若干
+					this.body[i]['ele']=document.createElement('div');
+					this.body[i]['ele'].style.width=this.width+'px';
+					this.body[i]['ele'].style.height=this.height+'px';
+					this.body[i]['ele'].style.backgroundColor=this.body[i].color;
+				}
+				// this.body[i].x
+				
+				this.body[i]['ele'].style.left=this.body[i]['x']*this.width+'px';
+				this.body[i]['ele'].style.top=this.body[i]['y']*this.height+'px';
+				map.ele.appendChild(this.body[i]['ele'])
+			}
+		}
+		Snake.prototype.setDirect=function(code){
+			switch(code){
+				case 37:
+					this.direction='left';
+					break;
+				case 38:
+					this.direction='up';
+					break;
+				case 39:
+					this.direction='right';
+					break;
+				case 40:
+					this.direction='down';
+					break;
+				
+			}
+		}
+		Snake.prototype.move=function(){
+			// 记录尾巴节点坐标，吃到食物后添加
+			var tailX=this.body[0].x;
+			var tailY=this.body[0].y;
+
+			// 前面节点代替后面节点，作为尾部
+			for(var i=0;i<this.body.length-1;i++){
+				this.body[i].x=this.body[i+1].x;
+				this.body[i].y=this.body[i+1].y;
+			}
+
+			switch(this.direction){
+				case 'right':
+					this.body[i]['x']+=1;
+					break;
+				case 'left':
+					this.body[i]['x']-=1;
+					break;
+				case 'up':
+					this.body[i]['y']-=1;
+					break;
+				case 'down':
+					this.body[i]['y']+=1;
+					break;
+			}
+
+			// 是否吃到食物
+			if(this.body[i]['x']==food.x && this.body[i]['y']==food.y){
+				this.body.unshift({
+					x:tailX,
+					y:tailY,
+					ele:null,
+					color:'blue'
+				})
+				// 得分
+				score++;
+				console.log(score,typeof score)
+				document.querySelector("#score").innerText=score;
+				// 吃掉食物后，重新产生食物
+				food.init();
+			}
+
+			// 是否撞墙
+			var columns=map.width/this.width;
+			var row=map.height/this.height;
+			if(this.body[i].x<0 || this.body[i].y<0 || this.body[i].x>=columns ||
+				this.body[i].y>=row){
+				this.isAlive=false;
+			// alert("sile")
+				return;
+			}
+			// 吃到自己
+			// var len=this.body.length;
+			for(var len=this.body.length,i=len-2;i>=0;i--){
+				if(this.body[len-1].x == this.body[i].x && this.body[len-1].y==this.body[i].y){
+					this.isAlive=false;
+					console.log("die")
+					return;
+				}
+			}
+			//再次显示效果
+			this.init();
+		}
+
+		var map= new Map()
+		var food=new Food()
+		var snake=new Snake()
+		var score=0;
+
+		// var map,food,snake,timer,code; //code按键码
+		// window.onload=function(){
+		// 	map=new Map();
+		// 	food=new Food();
+		// 	snake=new Snake();
+
+		// 	timer=setInterval(function(){
+		// 		snake.move();
+		// 		if(!snake.isAlive){
+		// 			alert("sile")
+		// 			clearInterval(timer)
+		// 		}
+		// 	},300)
+
+		// 	document.onkeydown=function(e){
+		// 		code=e.keyCode;
+		// 		snake.setDirect(code)
+		// 	}
+
+		// }
+
+
+		function Game(){
+			this.food=food;
+			this.snake=snake;
+			this.map=map;
+			this.init();
+		}
+		Game.prototype.init=function(){
+		 	timer=setInterval(function(){
+				snake.move();
+				if(!snake.isAlive){
+					alert("sile")
+					clearInterval(timer)
+				}
+			},300)
+
+			document.onkeydown=function(e){
+				code=e.keyCode;
+				snake.setDirect(code)
+			}
+		}
+
+		
+
+		// 问题  外面不认识game
+		window.onload=function(){
+			var game=new Game();
+			// var score=+document.querySelector("#score").innerText;
+			// console.log(typeof score)
+		}
+		
+	</script>
+	<style>
+		h1{
+			position: absolute;z-index: 10;right:200px;
+		}
+	</style>
+
+	<h1>score: <span id="score">0</span></h1>
+</body>
+</html>
